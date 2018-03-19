@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Stop: It's Giphy time</title>
+    <style type="text/css">
+        button,
+        div,
+        form,
+        input {
+            margin: 10px;
+            background-color: aquamarine;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Dog Search</h1>
+        <!-- Rendered buttons will get dumped here  -->
+        <div id="buttons-view"></div>
+        <form id="dog-form">
+            <label for="dog-input">Add a Dog, Dog</label>
+            <input type="text" id="dog-input">
+            <br>
+            <!-- Button triggers new dog to be added -->
+            <input id="add-dog" type="submit" value="Submit">
+        </form>
+
+        <div id="dog-view"></div>
+        <div id="buttons">
+            <!-- <button data-dog="[]"></button> -->
+        </div>
+        <div id="gifs-appear-here"></div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script type="text/javascript">
+
+            var topics = ["Labradore Retriever", "Italian Greyhound", "Scottish Terrier", "Irish Wolfhound", "Mastiff", "Bull Terrier", "English Bulldog", "Bloodhound", "Basset hound", "Chesapeake Bay Retriever"];
+
+            function displayDogInfo() {
+
+                var dog = $(this).attr("data-name");
+                var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+                    dog + "&api_key=SOGTPoReVTAH9YJfXwO9y2fuFwJ6a2Ex&limit=10";
+                //console.log(queryURL)
+                $.ajax({
+                    url: queryURL,
+                    method: "GET"
+                }).then(function (response) {
+                    var numberOfResults = response.data.length;
+                    $("#gifs-appear-here").empty();
+                    for (var i = 0; i < numberOfResults; i++) {
+                        var animatedURL = response.data[i].images.fixed_height.url;
+                        var stillURL = response.data[i].images.fixed_height_still.url
+                        var rating = response.data[i].rating;
+                        var dogImage = $("<img>")
+                        dogImage.attr("src", stillURL)
+                        dogImage.attr("data-state", "still")
+                        dogImage.attr("data-still", stillURL)
+                        dogImage.attr("data-animate", animatedURL)
+                        dogImage.addClass("gif")
+                        $("#gifs-appear-here").append(dogImage);
+                    }
+                });
+            }
+            function renderButtons() {
+
+                    $("#buttons-view").empty();
+                for (var i = 0; i < topics.length; i++) {
+                    var a = $("<button>");
+                    a.addClass("dog");
+                    // Added a data-attribute
+                    a.attr("data-name", topics[i]);
+                    // Provided the initial button text
+                    a.text(topics[i]);
+                    // Added the button to the buttons-view div
+                    $("#buttons-view").append(a);
+                }
+            }
+
+            $("#add-dog").on("click", function (event) {
+                event.preventDefault();
+
+                var topics = $("#dog-input").val().trim();
+
+                topics.push(dog);
+
+                renderButtons();
+            });
+            // Adding click event listeners to all elements with a class of "movie"
+            $(document).on("click", ".dog", displayDogInfo);
+            // Calling the renderButtons function to display the intial buttons
+            renderButtons();
+
+            $("#gifs-appear-here").on("click", ".gif", function () {
+                //$("#gifs-appear-here").empty();
+                var state = $(this).attr("data-state")
+                console.log(state)
+
+                if (state == "still") {
+                    var URL = $(this).attr("data-animate")
+                    $(this).attr("src", $(this).attr("data-animate"))
+                    $(this).attr("data-state", "animate")
+                }
+
+                else if (state == "animate") {
+                    var URL = $(this).attr("data-still")
+                    $(this).attr("src", $(this).attr("data-still"))
+                    $(this).attr("data-state", "still")
+                }
+            });
+        </script>
+    </div>
+</body>
+
+</html>
